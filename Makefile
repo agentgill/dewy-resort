@@ -76,7 +76,7 @@ else ifeq ($(tool),workato)
 	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bin/workato --version
 	@echo ""
 	@echo "Testing connection to Workato..."
-	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bin/workato account info || echo "⚠️  Not authenticated. Set your API key in .env"
+	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bin/workato workspace || echo "⚠️  Not authenticated. Set your API key in .env"
 else ifeq ($(tool),salesforce)
 	@if [ ! -f bin/sf ]; then \
 		echo "❌ Salesforce CLI not installed. Run 'make setup tool=salesforce' first."; \

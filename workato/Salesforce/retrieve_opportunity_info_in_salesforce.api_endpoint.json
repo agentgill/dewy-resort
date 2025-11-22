@@ -10,8 +10,8 @@
     "name": "Salesforce",
     "folder": ""
   },
-  "method": "GET",
-  "path": "get-opportunity-info/{id}",
+  "method": "POST",
+  "path": "retrieve-opportunity-info/{id}",
   "legacy": false,
   "recipe_timeout": 30,
   "validate_request": false,

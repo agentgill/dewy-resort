@@ -10,8 +10,8 @@
     "name": "Salesforce",
     "folder": ""
   },
-  "method": "GET",
-  "path": "get-lead-info/{id}",
+  "method": "POST",
+  "path": "retrieve-lead-info/{id}",
   "legacy": false,
   "recipe_timeout": 30,
   "validate_request": false,

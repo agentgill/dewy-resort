@@ -11,7 +11,7 @@
     "folder": ""
   },
   "method": "POST",
-  "path": "get-schema",
+  "path": "retrieve-schema",
   "legacy": false,
   "recipe_timeout": 30,
   "validate_request": false,

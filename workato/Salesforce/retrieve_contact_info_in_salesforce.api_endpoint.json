@@ -10,8 +10,8 @@
     "name": "Salesforce",
     "folder": ""
   },
-  "method": "GET",
-  "path": "get-contact-info/{id}",
+  "method": "POST",
+  "path": "retrieve-contact-info/{id}",
   "legacy": false,
   "validate_request": false,
   "validation_formula": "",

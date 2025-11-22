@@ -73,10 +73,10 @@ else ifeq ($(tool),workato)
 	fi
 	@echo "Workato CLI Status"
 	@echo "------------------"
-	@bin/workato --version
+	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bin/workato --version
 	@echo ""
 	@echo "Testing connection to Workato..."
-	@bin/workato account info || echo "⚠️  Not authenticated. Set your API key in .workatoenv"
+	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bin/workato account info || echo "⚠️  Not authenticated. Set your API key in .env"
 else ifeq ($(tool),salesforce)
 	@if [ ! -f bin/sf ]; then \
 		echo "❌ Salesforce CLI not installed. Run 'make setup tool=salesforce' first."; \
@@ -126,13 +126,19 @@ endif
 # Workato-Specific Commands
 # ============================================================
 
+# Load environment variables from .env if it exists
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
+
 validate:
 	@if [ ! -f bin/workato ]; then \
 		echo "❌ Workato CLI not installed. Run 'make setup tool=workato' first."; \
 		exit 1; \
 	fi
 	@echo "Validating recipes in workato/recipes/..."
-	@bin/workato recipe validate workato/recipes/**/*.recipe.json
+	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bin/workato recipe validate workato/recipes/**/*.recipe.json
 
 push:
 	@if [ ! -f bin/workato ]; then \
@@ -140,7 +146,7 @@ push:
 		exit 1; \
 	fi
 	@echo "Pushing recipes to developer sandbox..."
-	@bin/workato recipe push workato/recipes/
+	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bin/workato recipe push workato/recipes/
 
 pull:
 	@if [ ! -f bin/workato ]; then \
@@ -148,15 +154,15 @@ pull:
 		exit 1; \
 	fi
 	@echo "Pulling recipes from developer sandbox to workato/sandbox/..."
-	@bin/workato recipe pull --output workato/sandbox/
+	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bin/workato recipe pull --output workato/sandbox/
 
 workato-init:
 	@echo "Initializing Workato projects..."
-	@bash scripts/tools/create_workato_folders.sh
+	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bash scripts/tools/create_workato_folders.sh
 
 start-recipes:
 	@echo "Starting all Workato recipes..."
-	@bash scripts/tools/start_workato_recipes.sh
+	@export WORKATO_API_TOKEN=$(WORKATO_API_TOKEN) && bash scripts/tools/start_workato_recipes.sh
 
 # ============================================================
 # Salesforce-Specific Commands

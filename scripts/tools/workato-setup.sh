@@ -23,46 +23,38 @@ fi
 echo "✓ Python $PYTHON_VERSION detected"
 echo ""
 
-# Check and install uv package manager
-echo "Checking for uv package manager..."
-if ! command -v uv &> /dev/null; then
-    echo "Installing uv package manager..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+# Detect installation method: pipx for Homebrew Python, pip for others
+PYTHON_PATH=$(which python3)
+USE_PIPX=false
 
-    # Add uv to PATH for current session
-    export PATH="$HOME/.cargo/bin:$PATH"
-
-    if ! command -v uv &> /dev/null; then
-        echo "❌ Failed to install uv. Please install manually: https://github.com/astral-sh/uv"
-        exit 1
+if [[ "$PYTHON_PATH" == *"/opt/homebrew/"* ]] || [[ "$PYTHON_PATH" == *"/usr/local/"* ]]; then
+    if command -v pipx &> /dev/null; then
+        echo "✓ Homebrew Python detected with pipx available"
+        USE_PIPX=true
+    else
+        echo "⚠️  Homebrew Python detected but pipx not available"
+        echo "Installing pipx..."
+        python3 -m pip install --user pipx
+        python3 -m pipx ensurepath
+        export PATH="$HOME/.local/bin:$PATH"
+        if command -v pipx &> /dev/null; then
+            USE_PIPX=true
+        else
+            echo "❌ Failed to install pipx, falling back to pip"
+        fi
     fi
 fi
 
-echo "✓ uv package manager available"
-echo ""
-
-# Create isolated virtual environment
-VENV_DIR="tools/workato-cli-env"
-echo "Creating isolated virtual environment in $VENV_DIR..."
-
-# Create tools directory if it doesn't exist
-mkdir -p tools
-
-# Remove existing venv if present
-if [ -d "$VENV_DIR" ]; then
-    echo "Removing existing virtual environment..."
-    rm -rf "$VENV_DIR"
+# Install workato-platform-cli
+if [ "$USE_PIPX" = true ]; then
+    echo "Installing workato-platform-cli using pipx..."
+    pipx install workato-platform-cli
+    WORKATO_EXECUTABLE=$(pipx list --short | grep workato-platform-cli | cut -d' ' -f2)/bin/workato
+else
+    echo "Installing workato-platform-cli using pip..."
+    python3 -m pip install --user workato-platform-cli
+    WORKATO_EXECUTABLE="$HOME/.local/bin/workato"
 fi
-
-# Create new venv using uv
-uv venv "$VENV_DIR"
-
-echo "✓ Virtual environment created"
-echo ""
-
-# Install workato-platform-cli from PyPI
-echo "Installing workato-platform-cli from PyPI..."
-uv pip install --python "$VENV_DIR/bin/python" workato-platform-cli
 
 echo "✓ workato-platform-cli installed"
 echo ""
@@ -72,24 +64,37 @@ mkdir -p bin
 
 # Create wrapper script
 echo "Creating wrapper script at bin/workato..."
-cat > bin/workato << 'EOF'
+if [ "$USE_PIPX" = true ]; then
+    cat > bin/workato << 'EOF'
 #!/bin/bash
-# Workato CLI wrapper script
-# This script executes the Workato CLI from the isolated virtual environment
+# Workato CLI wrapper script (pipx installation)
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-VENV_WORKATO="$PROJECT_ROOT/tools/workato-cli-env/bin/workato"
-
-if [ ! -f "$VENV_WORKATO" ]; then
-    echo "❌ Workato CLI virtual environment not found."
-    echo "Please run 'make setup' to install the Workato CLI."
+if ! command -v workato &> /dev/null; then
+    echo "❌ Workato CLI not found in PATH."
+    echo "Please run 'make setup tool=workato' to install the Workato CLI."
     exit 1
 fi
 
 # Execute workato CLI with all arguments
-exec "$VENV_WORKATO" "$@"
+exec workato "$@"
 EOF
+else
+    cat > bin/workato << EOF
+#!/bin/bash
+# Workato CLI wrapper script (pip installation)
+
+WORKATO_EXECUTABLE="$WORKATO_EXECUTABLE"
+
+if [ ! -f "\$WORKATO_EXECUTABLE" ]; then
+    echo "❌ Workato CLI not found at \$WORKATO_EXECUTABLE"
+    echo "Please run 'make setup tool=workato' to install the Workato CLI."
+    exit 1
+fi
+
+# Execute workato CLI with all arguments
+exec "\$WORKATO_EXECUTABLE" "\$@"
+EOF
+fi
 
 # Make wrapper script executable
 chmod +x bin/workato

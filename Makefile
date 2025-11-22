@@ -1,6 +1,6 @@
 # Unified CLI Management for Multi-Vendor Tools
 # Supports: workato, salesforce, and future vendor CLIs
-.PHONY: setup status validate push pull clean help workato-setup workato-status sf-setup sf-status sf-deploy
+.PHONY: setup status validate push pull clean help workato-setup workato-status sf-setup sf-status sf-deploy start-recipes
 
 # Default tool is workato for backward compatibility
 tool ?= all
@@ -22,6 +22,7 @@ help:
 	@echo "  make validate              - Validate Workato recipes locally"
 	@echo "  make push                  - Push Workato recipes to developer sandbox"
 	@echo "  make pull                  - Pull Workato recipes from developer sandbox"
+	@echo "  make start-recipes         - Start all Workato recipes in ascending order by ID"
 	@echo ""
 	@echo "Salesforce-Specific Commands:"
 	@echo "  make sf-deploy org=<alias> - Deploy Salesforce metadata to specified org"
@@ -100,14 +101,14 @@ endif
 clean:
 ifeq ($(tool),all)
 	@echo "Cleaning up all vendor CLIs..."
-	@rm -rf tools/workato-cli-env/
+	@bash scripts/tools/workato-cleanup.sh || true
 	@rm -f bin/workato
 	@rm -rf tools/sf-cli/
 	@rm -f bin/sf
 	@echo "✓ Cleaned up all CLIs"
 else ifeq ($(tool),workato)
 	@echo "Cleaning up Workato CLI..."
-	@rm -rf tools/workato-cli-env/
+	@bash scripts/tools/workato-cleanup.sh || true
 	@rm -f bin/workato
 	@echo "✓ Cleaned up Workato CLI"
 else ifeq ($(tool),salesforce)
@@ -152,6 +153,10 @@ pull:
 workato-init:
 	@echo "Initializing Workato projects..."
 	@bash scripts/tools/create_workato_folders.sh
+
+start-recipes:
+	@echo "Starting all Workato recipes..."
+	@bash scripts/tools/start_workato_recipes.sh
 
 # ============================================================
 # Salesforce-Specific Commands

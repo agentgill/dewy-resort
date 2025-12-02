@@ -275,7 +275,6 @@ make workato-init
 - Creates project folders in Workato
 - Pushes all 33 recipes (15 Salesforce + 6 Stripe + 12 orchestrators)
 - Creates connection definitions in `Workspace-Connections` folder
-- Deploys the Salesforce MCP server API group
 
 **Expected output:**
 ```
@@ -336,8 +335,8 @@ make start-recipes
 - Reports success/failure for each recipe
 
 **Expected results:**
-- If you configured **Salesforce only**: 4 Salesforce recipes will remain inactive (requires manual activation), plus all Stripe-dependent recipes will remain inactive (11 total)
-- If you configured **Salesforce + Stripe**: All recipes should start _except_ the 4 requiring manual activation
+- If you configured **Salesforce only**: 4 Salesforce recipes remain inactive (manually activated), and all Stripe-dependent recipes inactive (11 total)
+- If you configured **Salesforce + Stripe**: Just 4 Salesforce recipes (manually activated) remain inactive
 
 **Sample output:**
 ```
@@ -411,7 +410,7 @@ For **each** of the 4 Salesforce SOQL recipes:
    - In the recipe canvas, locate the **Salesforce** action (usually the second step)
    - Click on the action to select it
    - In the right-hand panel, click **"Edit"**
-   - Select your **Salesforce connection** from the dropdown (e.g., "sf_dev_account" or your connection name)
+   - Select your **Salesforce connection** from the dropdown (e.g., "SF Dev Account" or your connection name)
    - Verify the SOQL query appears correctly
    - Click **"Done"** or **"Save"** in the action panel
 

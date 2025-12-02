@@ -398,7 +398,7 @@ These recipes require manual activation due to a **metadata caching issue** in W
 For **each** of the 4 Salesforce SOQL recipes:
 
 1. **Navigate to the recipe:**
-   - Log in to Workato: https://app.workato.com
+   - Log in to Workato: https://app.trial.workato.com (if using Developer Sandbox -- recommended)
    - Go to **Projects** → **atomic-salesforce-recipes**
    - Find the recipe (e.g., "Search bookings by room and dates")
 
@@ -565,7 +565,7 @@ curl -X POST "https://apim.workato.com/your-collection-id/search_room_by_number"
    cd salesforce
    ../bin/sf data import tree --plan data/data-plan.json --target-org myDevOrg
    ```
-
+   Note: You may need to delete Account records first, if any have been imported.
 ---
 
 ### make workato-init Fails
@@ -578,7 +578,7 @@ curl -X POST "https://apim.workato.com/your-collection-id/search_room_by_number"
    ```bash
    make status tool=workato
    ```
-3. If authentication fails, regenerate API token in Workato settings
+3. If authentication still fails, check that you have granted all permissions to your API client in Workato settings
 
 ---
 

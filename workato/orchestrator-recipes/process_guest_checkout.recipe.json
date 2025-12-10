@@ -363,10 +363,10 @@
             },
             "input": {
               "flow_id": {
-                "zip_name": "dev-atomic-recipes/upsert_case.recipe.json",
-                "name": "Upsert case",
-                "folder": "dev-atomic-recipes",
-                "folder_full_path": "Home/dev-atomic-recipes"
+                "zip_name": "atomic-salesforce-recipes/search_contact_by_email.recipe.json",
+                "name": "Search contact by email",
+                "folder": "atomic-salesforce-recipes",
+                "folder_full_path": "Home/atomic-salesforce-recipes"
               },
               "parameters": {
                 "email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_email\"]}')}"

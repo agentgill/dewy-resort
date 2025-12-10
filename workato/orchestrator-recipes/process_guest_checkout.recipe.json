@@ -1,6 +1,6 @@
 {
   "name": "Process guest checkout",
-  "version": 2,
+  "version": 1,
   "private": false,
   "concurrency": 1,
   "code": {

@@ -26,7 +26,7 @@
     "input": {
       "request": {
         "content_type": "json",
-        "schema": "[{\"name\":\"payment_intent_id\",\"label\":\"Payment intent ID\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Stripe PaymentIntent ID from failed checkout\"},{\"name\":\"guest_email\",\"label\":\"Guest email\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Guest email for Salesforce lookup\"},{\"name\":\"guest_id\",\"label\":\"Guest ID\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Salesforce Contact ID\"},{\"name\":\"idempotency_token\",\"label\":\"Idempotency token\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Unique token for refund idempotency\"},{\"name\":\"reason\",\"label\":\"Reason\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":true,\"hint\":\"Compensation reason for audit\"}]"
+        "schema": "[{\"name\":\"payment_intent_id\",\"label\":\"Payment intent ID\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Stripe PaymentIntent ID from failed checkout\"},{\"name\":\"guest_email\",\"label\":\"Guest email\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Guest email for Salesforce lookup\"},{\"name\":\"idempotency_token\",\"label\":\"Idempotency token\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Unique token for refund idempotency\"},{\"name\":\"reason\",\"label\":\"Reason\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":true,\"hint\":\"Compensation reason for audit\"}]"
       },
       "response": {
         "content_type": "json",
@@ -93,14 +93,6 @@
             "type": "string",
             "optional": false,
             "hint": "Guest email for Salesforce lookup"
-          },
-          {
-            "control_type": "text",
-            "label": "Guest ID",
-            "name": "guest_id",
-            "type": "string",
-            "optional": false,
-            "hint": "Salesforce Contact ID"
           },
           {
             "control_type": "text",
@@ -286,6 +278,315 @@
           },
           {
             "number": 4,
+            "provider": "workato_recipe_function",
+            "name": "call_recipe",
+            "as": "search_contact",
+            "keyword": "action",
+            "dynamicPickListSelection": {
+              "flow_id": "Search contact by email"
+            },
+            "toggleCfg": {
+              "flow_id": true
+            },
+            "input": {
+              "flow_id": {
+                "zip_name": "atomic-salesforce-recipes/search_contact_by_email.recipe.json",
+                "name": "Search contact by email",
+                "folder": "atomic-salesforce-recipes",
+                "folder_full_path": "Home/atomic-salesforce-recipes"
+              },
+              "parameters": {
+                "email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_email\"]}')}"
+              }
+            },
+            "extended_output_schema": [
+              {
+                "label": "Result",
+                "name": "result",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Contact ID",
+                    "name": "id",
+                    "type": "string"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Email",
+                    "name": "email",
+                    "type": "string"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "First name",
+                    "name": "first_name",
+                    "type": "string"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Last name",
+                    "name": "last_name",
+                    "type": "string"
+                  },
+                  {
+                    "control_type": "text",
+                    "label": "Contact type",
+                    "name": "contact_type",
+                    "type": "string"
+                  },
+                  {
+                    "control_type": "checkbox",
+                    "label": "Found",
+                    "render_input": "boolean_conversion",
+                    "parse_output": "boolean_conversion",
+                    "name": "found",
+                    "type": "boolean",
+                    "toggle_hint": "Select from option list",
+                    "toggle_field": {
+                      "label": "Found",
+                      "control_type": "text",
+                      "toggle_hint": "Use custom value",
+                      "name": "found",
+                      "type": "boolean"
+                    }
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "extended_input_schema": [
+              {
+                "label": "Parameters",
+                "name": "parameters",
+                "properties": [
+                  {
+                    "control_type": "text",
+                    "label": "Email",
+                    "name": "email",
+                    "type": "string",
+                    "optional": false,
+                    "hint": "Contact email address to search for"
+                  }
+                ],
+                "type": "object"
+              }
+            ],
+            "uuid": "comp-search-contact-004"
+          },
+          {
+            "number": 5,
+            "keyword": "if",
+            "input": {
+              "type": "compound",
+              "operand": "and",
+              "conditions": [
+                {
+                  "operand": "equals_to",
+                  "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"search_contact\",\"path\":[\"result\",\"found\"]}')}",
+                  "rhs": "false",
+                  "uuid": "comp-contact-not-found-cond-001"
+                }
+              ]
+            },
+            "block": [
+              {
+                "number": 6,
+                "provider": "logger",
+                "name": "log_message",
+                "as": "log_guest_not_found",
+                "keyword": "action",
+                "input": {
+                  "message": "Cannot compensate: guest not found for email #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_email\"]}')}"
+                },
+                "extended_input_schema": [
+                  {
+                    "control_type": "switch",
+                    "default": false,
+                    "disable_formula": true,
+                    "extends_schema": true,
+                    "hint": "                Send a copy of the message to Workato logs.\n                <a href=\"https://docs.workato.com/features/logging-service.html\" target=\"_blank\" class=\"ng-scope\">\n                  Learn more\n                </a>\n",
+                    "label": "Send to Workato log service",
+                    "name": "user_logs_enabled",
+                    "optional": true,
+                    "type": "string"
+                  }
+                ],
+                "uuid": "comp-log-not-found-006"
+              },
+              {
+                "number": 7,
+                "provider": "workato_api_platform",
+                "name": "return_response",
+                "as": "return_guest_not_found",
+                "keyword": "action",
+                "dynamicPickListSelection": {
+                  "http_status_code": "404 - Not Found"
+                },
+                "toggleCfg": {
+                  "http_status_code": true
+                },
+                "input": {
+                  "http_status_code": "404",
+                  "response": {
+                    "success": "false",
+                    "error_code": "GUEST_NOT_FOUND",
+                    "error_message": "Cannot compensate: guest contact not found",
+                    "details": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_email\"]}')}"
+                  }
+                },
+                "extended_output_schema": [
+                  {
+                    "change_on_blur": true,
+                    "control_type": "select",
+                    "extends_schema": true,
+                    "label": "Response",
+                    "name": "http_status_code",
+                    "pick_list": [
+                      [
+                        "Success",
+                        "200"
+                      ],
+                      [
+                        "Validation Error",
+                        "400"
+                      ],
+                      [
+                        "Payment Not Found",
+                        "404"
+                      ],
+                      [
+                        "Payment Not Refundable",
+                        "422"
+                      ],
+                      [
+                        "Server Error",
+                        "500"
+                      ]
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "label": "Response body",
+                    "name": "response",
+                    "properties": [
+                      {
+                        "control_type": "checkbox",
+                        "label": "Success",
+                        "render_input": "boolean_conversion",
+                        "parse_output": "boolean_conversion",
+                        "name": "success",
+                        "type": "boolean",
+                        "toggle_hint": "Select from option list",
+                        "toggle_field": {
+                          "label": "Success",
+                          "control_type": "text",
+                          "toggle_hint": "Use custom value",
+                          "name": "success",
+                          "type": "boolean"
+                        }
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Error code",
+                        "name": "error_code",
+                        "type": "string"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Error message",
+                        "name": "error_message",
+                        "type": "string"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Details",
+                        "name": "details",
+                        "type": "string"
+                      }
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "extended_input_schema": [
+                  {
+                    "change_on_blur": true,
+                    "control_type": "select",
+                    "extends_schema": true,
+                    "label": "Response",
+                    "name": "http_status_code",
+                    "pick_list": [
+                      [
+                        "Success",
+                        "200"
+                      ],
+                      [
+                        "Validation Error",
+                        "400"
+                      ],
+                      [
+                        "Payment Not Found",
+                        "404"
+                      ],
+                      [
+                        "Payment Not Refundable",
+                        "422"
+                      ],
+                      [
+                        "Server Error",
+                        "500"
+                      ]
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "label": "Response body",
+                    "name": "response",
+                    "properties": [
+                      {
+                        "control_type": "checkbox",
+                        "label": "Success",
+                        "render_input": "boolean_conversion",
+                        "parse_output": "boolean_conversion",
+                        "name": "success",
+                        "type": "boolean",
+                        "toggle_hint": "Select from option list",
+                        "toggle_field": {
+                          "label": "Success",
+                          "control_type": "text",
+                          "toggle_hint": "Use custom value",
+                          "name": "success",
+                          "type": "boolean"
+                        }
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Error code",
+                        "name": "error_code",
+                        "type": "string"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Error message",
+                        "name": "error_message",
+                        "type": "string"
+                      },
+                      {
+                        "control_type": "text",
+                        "label": "Details",
+                        "name": "details",
+                        "type": "string"
+                      }
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "uuid": "comp-return-not-found-007"
+              }
+            ],
+            "uuid": "comp-if-not-found-005"
+          },
+          {
+            "number": 8,
             "keyword": "if",
             "input": {
               "type": "compound",
@@ -301,7 +602,7 @@
             },
             "block": [
               {
-                "number": 5,
+                "number": 9,
                 "provider": "logger",
                 "name": "log_message",
                 "as": "log_payment_succeeded",
@@ -325,7 +626,7 @@
                 "uuid": "comp-log-success-005"
               },
               {
-                "number": 6,
+                "number": 10,
                 "provider": "workato_recipe_function",
                 "name": "call_recipe",
                 "as": "create_refund",
@@ -450,7 +751,7 @@
                 "uuid": "comp-create-refund-006"
               },
               {
-                "number": 7,
+                "number": 11,
                 "provider": "logger",
                 "name": "log_message",
                 "as": "log_refund_issued",
@@ -474,7 +775,7 @@
                 "uuid": "comp-log-refund-007"
               },
               {
-                "number": 8,
+                "number": 12,
                 "provider": "workato_recipe_function",
                 "name": "call_recipe",
                 "as": "search_booking",
@@ -493,7 +794,7 @@
                     "folder_full_path": "Home/atomic-salesforce-recipes"
                   },
                   "parameters": {
-                    "contact_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_id\"]}')}",
+                    "contact_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"search_contact\",\"path\":[\"result\",\"id\"]}')}",
                     "check_in_date": "=now.to_date"
                   }
                 },
@@ -588,7 +889,7 @@
                 "uuid": "comp-search-booking-008"
               },
               {
-                "number": 9,
+                "number": 13,
                 "keyword": "if",
                 "input": {
                   "type": "compound",
@@ -603,7 +904,7 @@
                 },
                 "block": [
                   {
-                    "number": 10,
+                    "number": 14,
                     "provider": "logger",
                     "name": "log_message",
                     "as": "log_booking_found",
@@ -627,7 +928,7 @@
                     "uuid": "comp-log-booking-010"
                   },
                   {
-                    "number": 11,
+                    "number": 15,
                     "provider": "workato_recipe_function",
                     "name": "call_recipe",
                     "as": "update_booking",
@@ -726,7 +1027,7 @@
                     "uuid": "comp-update-booking-011"
                   },
                   {
-                    "number": 12,
+                    "number": 16,
                     "provider": "workato_recipe_function",
                     "name": "call_recipe",
                     "as": "update_room",
@@ -747,7 +1048,7 @@
                       "parameters": {
                         "room_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"search_booking\",\"path\":[\"result\",\"bookings\",{\"path_element_type\":\"current_item\"},\"room_id\"]}')}",
                         "status": "Occupied",
-                        "current_guest_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_id\"]}')}"
+                        "current_guest_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"search_contact\",\"path\":[\"result\",\"id\"]}')}"
                       }
                     },
                     "extended_output_schema": [
@@ -829,7 +1130,7 @@
                     "uuid": "comp-update-room-012"
                   },
                   {
-                    "number": 13,
+                    "number": 17,
                     "provider": "workato_recipe_function",
                     "name": "call_recipe",
                     "as": "update_opportunity",
@@ -943,7 +1244,7 @@
                     "uuid": "comp-update-opp-013"
                   },
                   {
-                    "number": 14,
+                    "number": 18,
                     "provider": "workato_api_platform",
                     "name": "return_response",
                     "as": "return_success_reverted",
@@ -1202,7 +1503,7 @@
                 "uuid": "comp-if-booking-found-009"
               },
               {
-                "number": 15,
+                "number": 19,
                 "provider": "workato_api_platform",
                 "name": "return_response",
                 "as": "return_success",
@@ -1461,7 +1762,7 @@
             "uuid": "comp-if-succeeded-004"
           },
           {
-            "number": 16,
+            "number": 20,
             "keyword": "if",
             "input": {
               "type": "compound",
@@ -1477,7 +1778,7 @@
             },
             "block": [
               {
-                "number": 17,
+                "number": 21,
                 "provider": "workato_api_platform",
                 "name": "return_response",
                 "as": "return_not_refundable",
@@ -1649,14 +1950,14 @@
             "uuid": "comp-else-not-success-008"
           },
           {
-            "number": 18,
+            "number": 22,
             "as": "catch_error",
             "keyword": "catch",
             "input": {
             },
             "block": [
               {
-                "number": 19,
+                "number": 23,
                 "provider": "logger",
                 "name": "log_message",
                 "as": "log_error",
@@ -1680,7 +1981,7 @@
                 "uuid": "comp-log-error-011"
               },
               {
-                "number": 20,
+                "number": 24,
                 "provider": "workato_api_platform",
                 "name": "return_response",
                 "as": "return_error",

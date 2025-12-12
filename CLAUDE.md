@@ -97,10 +97,23 @@ Configured via `AUTH_PROVIDER` env var:
 - Composable by AI agents at runtime
 - Enable handling of unexpected scenarios
 
+## Quick Start (Mock Mode)
+
+```bash
+cp .env.example .env.local    # Then set AUTH_PROVIDER=mock, WORKATO_MOCK_MODE=true
+pnpm install                  # Native modules (better-sqlite3, bcrypt) build automatically
+pnpm db:init && pnpm db:seed  # Initialize and seed SQLite database
+pnpm dev                      # Start at http://localhost:3000
+```
+
+**Test credentials (from seed):**
+- Manager: `manager1@hotel.com` / `password123`
+- Guest: `guest1@hotel.com` / `password123` (Room 100)
+
 ## Development Notes
 
 - Path alias `@/*` maps to project root
 - Mock mode (`WORKATO_MOCK_MODE=true`) simulates API responses for frontend development
-- Test users in mock mode: `guest@example.com` / `manager@example.com` (password: `password`)
 - Restart dev server after changing env vars like `WORKATO_MOCK_MODE`
 - Jest tests are in `**/__tests__/**/*.test.ts` files within `lib/`
+- Native module builds are pre-approved in `package.json` under `pnpm.onlyBuiltDependencies`

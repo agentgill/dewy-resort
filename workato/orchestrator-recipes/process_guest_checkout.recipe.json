@@ -28,7 +28,7 @@
     "input": {
       "request": {
         "content_type": "json",
-        "schema": "[{\"name\":\"guest_email\",\"label\":\"Guest email\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Guest email address (must exist in Salesforce)\"},{\"name\":\"guest_name\",\"label\":\"Guest name\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Guest full name\"},{\"name\":\"guest_id\",\"label\":\"Guest ID\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Salesforce Contact ID (15 or 18-char)\"},{\"name\":\"amount\",\"label\":\"Amount\",\"type\":\"number\",\"control_type\":\"number\",\"optional\":false,\"hint\":\"Total amount in cents (USD), minimum 50\"},{\"name\":\"payment_method_id\",\"label\":\"Payment method ID\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Stripe PaymentMethod ID (tokenized card)\"},{\"name\":\"booking_id\",\"label\":\"Booking ID\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":true,\"hint\":\"Salesforce Booking ID (optional)\"},{\"name\":\"idempotency_token\",\"label\":\"Idempotency token\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Client-generated UUID for idempotency\"}]"
+        "schema": "[{\"name\":\"guest_email\",\"label\":\"Guest email\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Guest email address (must exist in Salesforce)\"},{\"name\":\"guest_name\",\"label\":\"Guest name\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Guest full name\"},{\"name\":\"amount\",\"label\":\"Amount\",\"type\":\"number\",\"control_type\":\"number\",\"optional\":false,\"hint\":\"Total amount in cents (USD), minimum 50\"},{\"name\":\"payment_method_id\",\"label\":\"Payment method ID\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Stripe PaymentMethod ID (tokenized card)\"},{\"name\":\"booking_id\",\"label\":\"Booking ID\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":true,\"hint\":\"Salesforce Booking ID (optional)\"},{\"name\":\"idempotency_token\",\"label\":\"Idempotency token\",\"type\":\"string\",\"control_type\":\"text\",\"optional\":false,\"hint\":\"Client-generated UUID for idempotency\"}]"
       },
       "response": {
         "content_type": "json",
@@ -274,14 +274,6 @@
             "hint": "Guest full name"
           },
           {
-            "control_type": "text",
-            "label": "Guest ID",
-            "name": "guest_id",
-            "type": "string",
-            "optional": false,
-            "hint": "Salesforce Contact ID (15 or 18-char)"
-          },
-          {
             "control_type": "number",
             "label": "Amount",
             "parse_output": "float_conversion",
@@ -347,7 +339,7 @@
                 "type": "string"
               }
             ],
-            "uuid": "a1b2c3d4-0002-0000-0000-000000000000"
+            "uuid": "checkout-log-start-002"
           },
           {
             "number": 3,
@@ -444,7 +436,7 @@
                 "type": "object"
               }
             ],
-            "uuid": "a1b2c3d4-0003-0000-0000-000000000000"
+            "uuid": "checkout-search-contact-003"
           },
           {
             "number": 4,
@@ -457,7 +449,7 @@
                   "operand": "equals_to",
                   "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"search_contact\",\"path\":[\"result\",\"found\"]}')}",
                   "rhs": "true",
-                  "uuid": "a1b2c3d4-0004-0001-0000-000000000000"
+                  "uuid": "checkout-if-not-found-cond-001"
                 }
               ]
             },
@@ -484,7 +476,7 @@
                     "type": "string"
                   }
                 ],
-                "uuid": "a1b2c3d4-0005-0000-0000-000000000000"
+                "uuid": "checkout-log-not-found-005"
               },
               {
                 "number": 6,
@@ -661,10 +653,10 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0006-0000-0000-000000000000"
+                "uuid": "checkout-return-not-found-006"
               }
             ],
-            "uuid": "a1b2c3d4-0004-0000-0000-000000000000"
+            "uuid": "checkout-if-not-found-004"
           },
           {
             "number": 7,
@@ -688,7 +680,7 @@
               "parameters": {
                 "email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_email\"]}')}",
                 "name": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_name\"]}')}",
-                "guest_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_id\"]}')}",
+                "guest_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"search_contact\",\"path\":[\"result\",\"id\"]}')}",
                 "idempotency_token": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"idempotency_token\"]}')}"
               }
             },
@@ -752,14 +744,6 @@
                   },
                   {
                     "control_type": "text",
-                    "label": "Guest ID",
-                    "name": "guest_id",
-                    "type": "string",
-                    "optional": false,
-                    "hint": "Internal system guest/contact ID"
-                  },
-                  {
-                    "control_type": "text",
                     "label": "Phone",
                     "name": "phone",
                     "type": "string",
@@ -778,7 +762,7 @@
                 "type": "object"
               }
             ],
-            "uuid": "a1b2c3d4-0007-0000-0000-000000000000"
+            "uuid": "checkout-create-customer-007"
           },
           {
             "number": 8,
@@ -804,7 +788,7 @@
                 "currency": "usd",
                 "customer_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"create_customer\",\"path\":[\"result\",\"customer_id\"]}')}",
                 "description": "Hotel checkout payment",
-                "guest_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_id\"]}')}",
+                "guest_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"search_contact\",\"path\":[\"result\",\"id\"]}')}",
                 "booking_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"booking_id\"]}')}",
                 "idempotency_token": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"idempotency_token\"]}')}"
               }
@@ -905,14 +889,6 @@
                   },
                   {
                     "control_type": "text",
-                    "label": "Guest ID",
-                    "name": "guest_id",
-                    "type": "string",
-                    "optional": false,
-                    "hint": "Internal guest/contact ID (metadata)"
-                  },
-                  {
-                    "control_type": "text",
                     "label": "Booking ID",
                     "name": "booking_id",
                     "type": "string",
@@ -931,7 +907,7 @@
                 "type": "object"
               }
             ],
-            "uuid": "a1b2c3d4-0008-0000-0000-000000000000"
+            "uuid": "checkout-create-payment-008"
           },
           {
             "number": 9,
@@ -1048,7 +1024,7 @@
                 "type": "object"
               }
             ],
-            "uuid": "a1b2c3d4-0009-0000-0000-000000000000"
+            "uuid": "checkout-confirm-payment-009"
           },
           {
             "number": 10,
@@ -1061,7 +1037,7 @@
                   "operand": "equals_to",
                   "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"confirm_payment\",\"path\":[\"result\",\"status\"]}')}",
                   "rhs": "succeeded",
-                  "uuid": "a1b2c3d4-0010-0001-0000-000000000000"
+                  "uuid": "checkout-if-succeeded-cond-001"
                 }
               ]
             },
@@ -1088,7 +1064,7 @@
                     "type": "string"
                   }
                 ],
-                "uuid": "a1b2c3d4-0011-0000-0000-000000000000"
+                "uuid": "checkout-log-success-011"
               },
               {
                 "number": 12,
@@ -1110,7 +1086,7 @@
                     "folder_full_path": "Home/atomic-salesforce-recipes"
                   },
                   "parameters": {
-                    "contact_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"trigger\",\"path\":[\"request\",\"guest_id\"]}')}",
+                    "contact_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"search_contact\",\"path\":[\"result\",\"id\"]}')}",
                     "check_in_date": "=now.to_date",
                     "status": "Checked In"
                   }
@@ -1231,7 +1207,7 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0012-0000-0000-000000000000"
+                "uuid": "checkout-search-booking-012"
               },
               {
                 "number": 13,
@@ -1330,7 +1306,7 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0013-0000-0000-000000000000"
+                "uuid": "checkout-update-booking-013"
               },
               {
                 "number": 14,
@@ -1433,7 +1409,7 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0014-0000-0000-000000000000"
+                "uuid": "checkout-update-room-014"
               },
               {
                 "number": 15,
@@ -1547,7 +1523,7 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0015-0000-0000-000000000000"
+                "uuid": "checkout-update-opp-015"
               },
               {
                 "number": 16,
@@ -1808,10 +1784,10 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0016-0000-0000-000000000000"
+                "uuid": "checkout-return-success-016"
               }
             ],
-            "uuid": "a1b2c3d4-0010-0000-0000-000000000000"
+            "uuid": "checkout-if-succeeded-010"
           },
           {
             "number": 17,
@@ -1824,7 +1800,7 @@
                   "operand": "equals_to",
                   "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"confirm_payment\",\"path\":[\"result\",\"status\"]}')}",
                   "rhs": "requires_action",
-                  "uuid": "a1b2c3d4-0014-0001-0000-0000-000000000000"
+                  "uuid": "checkout-if-requires-action-cond-001"
                 }
               ]
             },
@@ -2050,10 +2026,10 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0018-0000-0000-000000000000"
+                "uuid": "checkout-return-requires-action-018"
               }
             ],
-            "uuid": "a1b2c3d4-0017-0000-0000-000000000000"
+            "uuid": "checkout-if-requires-action-017"
           },
           {
             "number": 19,
@@ -2066,7 +2042,7 @@
                   "operand": "equals_to",
                   "lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"confirm_payment\",\"path\":[\"result\",\"status\"]}')}",
                   "rhs": "requires_payment_method",
-                  "uuid": "a1b2c3d4-0019-0001-0000-000000000000"
+                  "uuid": "checkout-if-payment-failed-cond-001"
                 }
               ]
             },
@@ -2259,10 +2235,10 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0020-0000-0000-000000000000"
+                "uuid": "checkout-return-payment-failed-020"
               }
             ],
-            "uuid": "a1b2c3d4-0019-0000-0000-000000000000"
+            "uuid": "checkout-if-payment-failed-019"
           },
           {
             "number": 21,
@@ -2293,7 +2269,7 @@
                     "type": "string"
                   }
                 ],
-                "uuid": "a1b2c3d4-0022-0000-0000-000000000000"
+                "uuid": "checkout-log-error-022"
               },
               {
                 "number": 23,
@@ -2470,16 +2446,16 @@
                     "type": "object"
                   }
                 ],
-                "uuid": "a1b2c3d4-0024-0000-0000-000000000000"
+                "uuid": "checkout-return-error-024"
               }
             ],
-            "uuid": "a1b2c3d4-0022-0000-0000-000000000000"
+            "uuid": "checkout-log-error-022"
           }
         ],
-        "uuid": "a1b2c3d4-0001-0000-0000-000000000000"
+        "uuid": "checkout-try-001"
       }
     ],
-    "uuid": "a1b2c3d4-0000-0000-0000-000000000000"
+    "uuid": "checkout-trigger-000"
   },
   "config": [
     {

@@ -40,12 +40,12 @@ This project demonstrates a **two-tier tool design** that balances LLM flexibili
 
 ## Why This Matters
 
-![System Architecture](./docs/architecture/system-architecture.png)
+![System Architecture](./docs/architecture/system-architecture.png)<br/>
 *Enterprise MCP Architecture - Persona-based servers with orchestrators and atomic skills*
 
 ### Real-World Example: Guest Check-In
 
-![Guest Check-In Flow](./docs/architecture/guest-checkin-flow.png)
+![Guest Check-In Flow](./docs/architecture/guest-checkin-flow.png)<br/>
 *Check-in orchestrator: < 3 seconds, 6 API calls, validates prerequisites, ensures correct state transitions*
 
 **Traditional Approach (LLM with raw Salesforce access):**

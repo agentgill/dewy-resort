@@ -21,11 +21,11 @@ This diagram illustrates the complete system architecture showing:
 
 - **Persona-Based MCP Servers**
   - **Guest MCP Server**: Guest-facing workflows and self-service
-    - Orchestrators: `check_in_guest`, `checkout_guest`, `service_request`
-    - Atomic Skills: `search_contact`, `search_booking`, `upsert_case`
+    - Orchestrators: `manage_bookings`, `check_in_guest`, `checkout_guest`, `service_request`, `manage_cases`
+    - Atomic Skills: `search_rooms_on_behalf_of_guest`, `search_cases_on_behalf_of_guest`
 
   - **Staff MCP Server**: Staff operations and management
-    - Orchestrators: `maintenance_request`, `assign_room`, `update_case_status`
+    - Orchestrators: `check_in_guest`, `checkout_guest`, `maintenance_request`, `manage_cases`, `compensate_checkout`
     - Atomic Skills: `create_contact`, `search_room`, `update_room_status`
 
 - **API Platform Layer**
@@ -45,9 +45,9 @@ This diagram illustrates the complete system architecture showing:
 - **Orchestrators (High-level)**: Encode common workflows and business rules for happy-path scenarios. Fast, validated, convenient for common use cases.
 - **Atomic Skills (Building blocks)**: Low-level operations that AI agents can intelligently compose at runtime to handle edge cases and dynamic scenarios.
 
-**Example**: When a guest says "I need towels in room 101" and the contact doesn't exist:
-- Orchestrator would fail (requires existing contact)
-- AI agent uses atomic skills: `create_contact` → `upsert_case` with proper approval authority
+**Example**: When a staff member says "I need to check available rooms for a walk-in guest" but the contact doesn't exist:
+- Orchestrator `manage_bookings` would fail (requires existing contact)
+- AI agent uses atomic skills: `create_contact_if_not_found` → `search_room` with proper staff authorization
 
 ---
 
@@ -171,6 +171,63 @@ These diagrams show detailed sequence flows for key orchestrator recipes, demons
 - Room status transitions (Occupied/Vacant → Maintenance → Cleaning → Vacant)
 - Vendor management and notification
 - Case assignment automation
+
+---
+
+### compensate-checkout-failure-flow.png
+
+**Compensate Checkout Failure - Saga pattern for distributed transaction rollback**
+
+**Overview:**
+- **Execution Time**: 4-6 seconds
+- **API Operations**: 1 Stripe retrieve + 1 refund + 3 SF conditional updates
+- **Orchestrator Type**: Saga pattern - compensating transactions
+
+**Sequence Flow:**
+
+1. **MCP Tool** - `POST /compensate-checkout-failure`
+   - Input: `{payment_intent_id, guest_email, idempotency_token}`
+
+2. **Atomic Recipe** - Retrieve Stripe Payment Status
+   - ✓ Status: succeeded, charge_id
+   - ✗ 404 - Payment not found | 422 - Not refundable
+
+3. **Atomic Recipe** - Search Contact by Email
+   - ✓ Contact id (guest_id)
+   - ✗ 404 - Guest not found
+
+4. **Atomic Recipe** - Create Stripe Refund (Issue Full Refund)
+   - ✓ refund_id, status (succeeded/pending)
+   - ✗ 422 - Already refunded | 500 - Refund failed
+   - Idempotent via refund idempotency token
+   - Full amount refund only
+
+5. **Atomic Recipe** - Search Booking by Contact and Date
+   - Check Current booking status
+   - ✓ Current booking status
+   - ✗ 404 - Booking not found
+
+6. **Orchestrator** - Conditional Salesforce Rollback
+   - IF Booking = 'Checked Out' → Revert to 'Checked In'
+   - IF Room = 'Cleaning' → Revert to 'Occupied'
+   - IF Opportunity = 'Closed Won' → Revert to 'Negotiation/Review'
+   - ELSE: No changes needed (already correct state)
+
+7. **MCP Tool** - Return Success
+   - ✓ refund_id, compensation_id, salesforce_reverted
+
+**Implementation Highlights:**
+- **Pattern**: Saga pattern - compensating transactions for distributed rollback
+- **Errors**: 404 (payment not found), 422 (already refunded), 500 (refund failed)
+- **Idempotency**: Stripe refund token + conditional SF updates (check state before reverting)
+- **Key Detail**: Refund succeeds even if SF reversion fails (guest experience priority over data consistency)
+
+**Workshop Teaching Points:**
+- Saga pattern for distributed transaction rollback
+- Compensation logic for multi-system failures
+- Idempotency in refund operations
+- Guest experience prioritization (refund succeeds even if SF fails)
+- Conditional state reversions (only revert if in expected state)
 
 ---
 
